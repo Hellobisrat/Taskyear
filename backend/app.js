@@ -1,16 +1,56 @@
-import express from 'express'
-import connect from './db/connect.js';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import connect from "./src/db/connect.js";
+import cookieParser from "cookie-parser";
+import fs from "node:fs";
+import errorHandler from "./src/helpers/errorhandler.js";
 
-const PORT = 5000;
+dotenv.config();
 
+const port = process.env.PORT || 8000;
 
 const app = express();
 
-app.use(express.json())
-//app.use(cors())
+// middleware
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
+);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
+// error handler middleware
+app.use(errorHandler);
 
-app.listen(()=>{
-  connect();
-  console.log(`app start listening at http:localhost/${PORT}`)
-})
+//routes
+const routeFiles = fs.readdirSync("./src/routes");
+
+routeFiles.forEach((file) => {
+  // use dynamic import
+  import(`./src/routes/${file}`)
+    .then((route) => {
+      app.use("/api/v1", route.default);
+    })
+    .catch((err) => {
+      console.log("Failed to load route file", err);
+    });
+});
+
+const server = async () => {
+  try {
+    await connect();
+
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (error) {
+    console.log("Failed to strt server.....", error.message);
+    process.exit(1);
+  }
+};
+
+server();

@@ -11,16 +11,16 @@ import {
   userLoginStatus,
   verifyEmail,
   verifyUser,
-} from "../controllers/auth/userController.js";
+} from "../../controllers/auth/userController.js";
 import {
   adminMiddleware,
   creatorMiddleware,
   protect,
-} from "../middleware/authMiddleware.js";
+} from "../../middleware/authMiddleware.js";
 import {
   deleteUser,
   getAllUsers,
-} from "../controllers/auth/adminController.js";
+} from "../../controllers/auth/adminController.js";
 
 const router = express.Router();
 
